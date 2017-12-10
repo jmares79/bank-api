@@ -16,3 +16,30 @@ use Illuminate\Http\Request;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+$router->post('/login', 'LoginController@login');
+$router->post('/login/refresh', 'LoginController@refresh');
+
+Route::post('/customer', function () {
+    //
+})->middleware('auth:api');
+
+Route::get('/transaction/{customerId}/{transactionId}', function () {
+    //
+})->middleware('auth:api');
+
+Route::get('/transactions/{id}/{amount}/{date}/{offset}/{limit}', function () {
+    //
+})->middleware('auth:api');
+
+Route::post('/transaction', function () {
+    //
+})->middleware('auth:api');
+
+Route::put('/transaction/{id}', function () {
+    //
+})->middleware('auth:api');
+
+Route::delete('/transaction/{id}', function () {
+    //
+})->middleware('auth:api');
