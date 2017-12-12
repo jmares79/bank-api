@@ -24,9 +24,7 @@ Route::post('/customer', function () {
     //
 })->middleware('auth:api');
 
-Route::get('/transaction/{customerId}/{transactionId}', function () {
-    //
-})->middleware('auth:api');
+Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@transaction')->middleware('auth:api')->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+']);;
 
 Route::get('/transactions/{id}/{amount}/{date}/{offset}/{limit}', function () {
     //
