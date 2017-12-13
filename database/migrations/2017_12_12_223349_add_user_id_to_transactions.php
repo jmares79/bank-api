@@ -27,6 +27,8 @@ class AddUserIdToTransactions extends Migration
      */
     public function down()
     {
-        $table->dropForeign(['user_id']);
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->dropForeign(['user_id']);
+        });
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Exceptions\TransactionNotFoundException;
 use App\Transaction;
 
 /**
@@ -11,11 +12,23 @@ use App\Transaction;
  */
 class TransactionService
 {
-    public function getTrasaction($customerId, $transactionId)
+   /**
+    * Gets a transaction by customer and id
+    *
+    * @param integer $customerId
+    * @param integer $transactionId
+    *
+    * @return Transaction|null A transacion model or null if nothing found
+    */
+    public function getTransaction($customerId, $transactionId)
     {
-        return \App\Transaction::where([
+        $transaction = \App\Transaction::where([
             ['user_id', '=', $customerId],
             ['id', '=', $transactionId]
-        ])->get(['id', 'amount', 'date']);
+        ])->get(['id', 'amount', 'date'])->first();
+
+        if (!$transaction) { throw new TransactionNotFoundException(); }
+
+        return $transaction;
     }
 }
