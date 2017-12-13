@@ -11,5 +11,11 @@ use App\Transaction;
  */
 class TransactionService
 {
-
+    public function getTrasaction($customerId, $transactionId)
+    {
+        return \App\Transaction::where([
+            ['user_id', '=', $customerId],
+            ['id', '=', $transactionId]
+        ])->get(['id', 'amount', 'date']);
+    }
 }

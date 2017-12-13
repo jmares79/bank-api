@@ -17,14 +17,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-$router->post('/login', 'LoginController@login');
-$router->post('/login/refresh', 'LoginController@refresh');
+// $router->post('/login', 'LoginController@login');
+// $router->post('/login/refresh', 'LoginController@refresh');
 
 Route::post('/customer', function () {
     //
 })->middleware('auth:api');
 
-Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@transaction')->middleware('auth:api')->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+']);;
+Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@transaction')->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+']);
 
 Route::get('/transactions/{id}/{amount}/{date}/{offset}/{limit}', function () {
     //
