@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Service\TransactionService;
 use App\Exceptions\TransactionNotFoundException;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -25,7 +26,7 @@ class TransactionController extends Controller
     * @return mixed A transaction in JSON format
     * @throws Exception On error while getting a transaction
     */
-    public function transaction($customerId, $transactionId)
+    public function transaction(Request $request, $customerId, $transactionId)
     {
         try {
             $transaction = $this->transaction->getTransaction($customerId, $transactionId);
@@ -33,6 +34,34 @@ class TransactionController extends Controller
             return response()->json(['transaction' => $transaction], Response::HTTP_OK);
         } catch (TransactionNotFoundException $e) {
             return response()->json(['message' => "Transaction not found"], Response::HTTP_NOT_FOUND);
+        } catch (Exception $e) {
+            return response()->json(['message' => "Error while getting transaction"], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+   /**
+    * Get a list of transactions by customer and an series of filters
+    *
+    * @param integer $customerId
+    * @param float $amount
+    * @param integer $year
+    * @param integer $month
+    * @param integer $day
+    * @param integer $offset
+    * @param integer $limit
+    *
+    * @return mixed A list of transactions in JSON format
+    * @throws Exception On error while getting a transaction
+    */
+    public function transactions(Request $request, $customerId, $amount, $year, $month, $day,  $offset, $limit)
+    {
+        $customer = DB::table('users')->where('users.id', $customerId);
+        if ($customer == null) { return response()->json(['message' => 'No user'], Response::HTTP_NOT_FOUND); }
+
+        try {
+            $transactions = $this->transaction->getTransactions($customer, $amount,  $year, $month, $day,  $offset, $limit);
+
+            return response()->json(['transaction' => $transaction], Response::HTTP_OK);
         } catch (Exception $e) {
             return response()->json(['message' => "Error while getting transaction"], Response::HTTP_BAD_REQUEST);
         }
