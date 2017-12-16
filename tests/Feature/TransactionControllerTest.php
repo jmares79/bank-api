@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\Response;
 
 class TransactionControllerTest extends TestCase
@@ -12,6 +13,10 @@ class TransactionControllerTest extends TestCase
     const NON_EXISTING_CUSTOMER = 100;
     const EXISTING_TRANSACTION = 1;
     const NON_EXISTING_TRANSACTION = 100;
+    const VALID_FAKER_AMOUNT = 155;
+    const INVALID_FAKER_AMOUNT = 100;
+
+    use DatabaseTransactions;
 
     /**
      * Tests getTransaction method of TransactionController.
@@ -43,7 +48,9 @@ class TransactionControllerTest extends TestCase
                             [
                                 'customerId' => $customerId,
                                 'amount' => $filters['amount'],
-                                'date' => $filters['date'],
+                                'year' => $filters['year'],
+                                'month' => $filters['month'],
+                                'day' => $filters['day'],
                                 'offset' => $filters['offset'],
                                 'limit' => $filters['limit'],
                             ]
@@ -72,27 +79,38 @@ class TransactionControllerTest extends TestCase
 
     public function filteredProvider()
     {
-        $transactions = ['transactions' => ['*']];
-        $emptyResponse = ['message' => []];
-
-        $filtersArray = [
-            [
-                'amount' => 122.1,
-                'date' => '2017-06-14',
-                'offset' => '1',
-                'limit' => '5'
+        $validResponse = [
+            'transactions' => [
+                'id',
+                'amount',
+                'date'
             ]
         ];
 
-        $emptyFilters = [
-            'amount' => null,
-            'date' => null,
-            'offset' => null,
-            'limit' => null
+        $emptyResponse = ['message' => []];
+
+        $filters = [
+            'amount' => self::VALID_FAKER_AMOUNT,
+            'year' => '2017',
+            'month' => date('n'),
+            'day' => date('d'),
+            'offset' => '1',
+            'limit' => '5'
+        ];
+
+        $emptyResultsFilter = [
+            'amount' => self::INVALID_FAKER_AMOUNT,
+            'year' => '2017',
+            'month' => date('n'),
+            'day' => date('d'),
+            'offset' => '1',
+            'limit' => '5'
         ];
 
         return array(
-            array(null, $emptyFilters, $emptyResponse, Response::HTTP_NOT_FOUND),
+            array(self::NON_EXISTING_CUSTOMER, $filters, $emptyResponse, Response::HTTP_NOT_FOUND),
+            array(self::EXISTING_CUSTOMER, $filters, $validResponse, Response::HTTP_OK),
+            array(self::EXISTING_CUSTOMER, $emptyResultsFilter, $emptyResponse, Response::HTTP_OK),
         );
     }
 }

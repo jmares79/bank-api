@@ -57,7 +57,8 @@ class TransactionController extends Controller
     {
         DB::connection()->enableQueryLog();
         $customer = DB::table('users')->where('users.id', $customerId);
-        if ($customer == null) { return response()->json(['message' => 'No user'], Response::HTTP_NOT_FOUND); }
+
+        if ($customer->get()->isEmpty()) { return response()->json(['message' => 'No user'], Response::HTTP_NOT_FOUND); }
 
         try {
             $transactions = $this->transaction->getTransactions($customer, $amount,  $year, $month, $day,  $offset, $limit);

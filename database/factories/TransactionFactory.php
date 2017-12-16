@@ -4,7 +4,7 @@ use Faker\Generator as Faker;
 
 $factory->define(App\Transaction::class, function (Faker $faker) {
     return [
-        'amount' => $faker->randomFloat(2, 1, 3500),
-        'date' => $faker->dateTimeThisYear
+        'amount' => $faker->randomFloat(0, 155, 155),
+        'date' => $faker->dateTimeBetween('now', 'now')
     ];
 });

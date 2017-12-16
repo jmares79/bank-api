@@ -28,7 +28,7 @@ Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@t
     ->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+'])->name('get-transaction');;
 
 Route::get('/transactions/{customerId}/{amount}/{year}/{month}/{day}/{offset}/{limit}', 'TransactionController@transactions')
-    ->where(['customerId' => '[0-9]+', 'offset' => '[0-9]+', 'limit' => '[0-9]+'])->name('get-filtered-transaction');
+    ->where(['customerId' => '[0-9]+', 'month' => '[2-9]|1[0-2]?', 'offset' => '[0-9]+', 'limit' => '[0-9]+'])->name('get-filtered-transaction');
 
 Route::post('/transaction', function () {
     //
