@@ -30,9 +30,7 @@ Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@t
 Route::get('/transactions/{customerId}/{amount}/{year}/{month}/{day}/{offset}/{limit}', 'TransactionController@transactions')
     ->where(['customerId' => '[0-9]+', 'month' => '[2-9]|1[0-2]?', 'offset' => '[0-9]+', 'limit' => '[0-9]+'])->name('get-filtered-transaction');
 
-Route::post('/transaction', function () {
-    //
-})->middleware('auth:api');
+Route::post('/transaction', 'TransactionController@create')->name('create-transaction');
 
 Route::put('/transaction/{id}', function () {
     //

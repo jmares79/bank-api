@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Exceptions\TransactionNotFoundException;
+use App\Exceptions\TransactionCreationException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use App\Service\FilterService;
@@ -68,6 +69,24 @@ class TransactionService
         $transactions = $this->filterService->applyFilters($this->transactions, $filters);
 
         return $transactions;
+    }
+
+   /**
+    * Creates a new transaction
+    *
+    * @param mixed $payload Array with transaction request data
+    *
+    * @return void
+    * @throws TransactionCreationException On creation error
+    */
+    public function create($payload)
+    {
+        $transaction = new Transaction;
+        $transaction->amount = $payload->amount;
+
+        $user = \App\User::find($payload->customerId);
+
+        if (!$user->transactions()->save($transaction)) throw new TransactionCreationException();
     }
 
     /**

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use App\Service\TransactionService;
 use App\Exceptions\TransactionNotFoundException;
+use App\Exceptions\TransactionCreationException;
+use App\Http\Requests\CreateTransactionPost;
 use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
@@ -66,6 +68,21 @@ class TransactionController extends Controller
             return response()->json(['transactions' => $transactions], Response::HTTP_OK);
         } catch (Exception $e) {
             return response()->json(['message' => "Error while getting transaction"], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+    public function create(CreateTransactionPost $request)
+    {
+        $payload = json_decode($request->getContent());
+
+        try {
+            $this->transaction->create($payload);
+
+            return response()->json(['message' => "Transaction created sucessfully"], Response::HTTP_CREATED);
+        } catch (TransactionCreationException $e) {
+            return response()->json(['message' => "Error while creating product"], Response::HTTP_BAD_REQUEST);
+        } catch (Exception $e) {
+            return response()->json(['message' => "Error while creating product"], Response::HTTP_BAD_REQUEST);
         }
     }
 }

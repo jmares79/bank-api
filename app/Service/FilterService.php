@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Exceptions\TransactionNotFoundException;
 use Illuminate\Database\Query\Builder;
-use App\Transaction;
 
 /**
  * @resource Filter
