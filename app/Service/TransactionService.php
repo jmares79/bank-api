@@ -4,8 +4,12 @@ namespace App\Service;
 
 use App\Exceptions\TransactionNotFoundException;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Facades\DB;
 use App\Service\FilterService;
 use App\Filter\Amount;
+use App\Filter\Date;
+use App\Filter\Offset;
+use App\Filter\Limit;
 use App\Transaction;
 
 /**
@@ -61,29 +65,27 @@ class TransactionService
         $this->transactions = $customer->join('transactions', 'users.id', '=', 'transactions.user_id');
         $filters = $this->prepareQueryByFilters($amount, $year, $month, $day,  $offset, $limit);
 
-        $transactions = $this->getFilteredTransactions($filters);
+        $transactions = $this->filterService->applyFilters($this->transactions, $filters);
 
         return $transactions;
     }
 
+    /**
+    * Prepare transactions filters for being applied
+    *
+    * @param integer $amount
+    * @param integer $year
+    * @param integer $month
+    * @param integer $day
+    * @param integer $offset
+    * @param integer $limit
+    *
+    * @return mixed An array with the filter name as key and its value
+    */
     protected function prepareQueryByFilters($amount, $year, $month, $day, $offset, $limit)
     {
-        return compact('amount', 'year', 'month', 'day', 'offset', 'limit');
+        $date = $year.'-'.$month.'-'.$day;
+
+        return compact('amount', 'date', 'offset', 'limit');
     }
-
-    protected function getFilteredTransactions($filters)
-    {
-        foreach ($filters as $name => $value) {
-            var_dump($name, $value);
-            $filter = $this->filterService->getFilter($name);
-            // dd(class_exists($filter));
-            if (class_exists($filter)) {
-                $this->transactions = $filter::apply($this->transactions, $value);
-            }
-
-            dd($this->transactions->get());
-        }
-    }
-
-
 }

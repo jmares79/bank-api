@@ -55,13 +55,14 @@ class TransactionController extends Controller
     */
     public function transactions(Request $request, $customerId, $amount, $year, $month, $day,  $offset, $limit)
     {
+        DB::connection()->enableQueryLog();
         $customer = DB::table('users')->where('users.id', $customerId);
         if ($customer == null) { return response()->json(['message' => 'No user'], Response::HTTP_NOT_FOUND); }
 
         try {
             $transactions = $this->transaction->getTransactions($customer, $amount,  $year, $month, $day,  $offset, $limit);
 
-            return response()->json(['transaction' => $transaction], Response::HTTP_OK);
+            return response()->json(['transactions' => $transactions], Response::HTTP_OK);
         } catch (Exception $e) {
             return response()->json(['message' => "Error while getting transaction"], Response::HTTP_BAD_REQUEST);
         }
