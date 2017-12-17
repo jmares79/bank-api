@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateTransactionPost extends FormRequest
+class UpdateTransactionPut extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -24,7 +24,7 @@ class CreateTransactionPost extends FormRequest
     public function rules()
     {
         return [
-            'customerId' => 'required|integer',
+            'transactionId' => 'required|integer',
             'amount' => 'required|numeric|min:0.1',
         ];
     }

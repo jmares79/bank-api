@@ -28,14 +28,8 @@ Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@t
     ->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+'])->name('get-transaction');;
 
 Route::get('/transactions/{customerId}/{amount}/{year}/{month}/{day}/{offset}/{limit}', 'TransactionController@transactions')
-    ->where(['customerId' => '[0-9]+', 'month' => '[2-9]|1[0-2]?', 'offset' => '[0-9]+', 'limit' => '[0-9]+'])->name('get-filtered-transaction');
+    ->where(['customerId' => '[0-9]+', 'year' => '[0-9]{4}', 'month' => '[2-9]|1[0-2]?', 'day' => '(0[1-9]|[12]\d|3[01])', 'offset' => '[0-9]+', 'limit' => '[0-9]+'])->name('get-filtered-transaction');
 
 Route::post('/transaction', 'TransactionController@create')->name('create-transaction');
-
-Route::put('/transaction/{id}', function () {
-    //
-})->middleware('auth:api');
-
-Route::delete('/transaction/{id}', function () {
-    //
-})->middleware('auth:api');
+Route::put('/transaction', 'TransactionController@update')->name('update-transaction');
+Route::delete('/transaction/{transactionId}', 'TransactionController@delete')->name('delete-transaction');

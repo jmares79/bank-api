@@ -4,9 +4,13 @@ namespace App\Service;
 
 use App\Exceptions\TransactionNotFoundException;
 use App\Exceptions\TransactionCreationException;
+use App\Exceptions\TransactionUpdateException;
+use App\Exceptions\TransactionDeleteException;
+use \Illuminate\Database\QueryException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use App\Service\FilterService;
+use Illuminate\Http\Request;
 use App\Filter\Amount;
 use App\Filter\Date;
 use App\Filter\Offset;
@@ -35,13 +39,14 @@ class TransactionService
     * @param integer $transactionId
     *
     * @return Transaction|null A transaction model or null if nothing found
+    * @throws TransactionNotFoundException On retrieve error
     */
     public function getTransaction($customerId, $transactionId)
     {
         $transaction = \App\Transaction::where([
             ['user_id', '=', $customerId],
             ['id', '=', $transactionId]
-        ])->get(['id', 'amount', 'date'])->first();
+        ])->get(['id', 'amount', 'created_at AS date'])->first();
 
         if (!$transaction) { throw new TransactionNotFoundException(); }
 
@@ -76,20 +81,69 @@ class TransactionService
     *
     * @param mixed $payload Array with transaction request data
     *
-    * @return void
+    * @return mixed An array with the information of the created transaction
     * @throws TransactionCreationException On creation error
     */
     public function create($payload)
     {
-        $transaction = new Transaction;
-        $transaction->amount = $payload->amount;
+        try {
+            $transaction = new Transaction;
 
-        $user = \App\User::find($payload->customerId);
+            $transaction->amount = $payload->amount;
 
-        if (!$user->transactions()->save($transaction)) throw new TransactionCreationException();
+            $user = \App\User::find($payload->customerId);
+            $user->transactions()->save($transaction);
+
+            return $transaction::select('id AS transactionId', 'user_id AS customerId','amount', 'created_at AS date')
+                                ->where('id', $transaction->id)->first();
+        } catch (QueryException $e) {
+            throw new TransactionCreationException();
+        }
     }
 
-    /**
+   /**
+    * Updates an existing transaction
+    *
+    * @param Builder $transaction A Builder object with the fetched transaction
+    * @param numeric $newAmount The data for updating the transaction
+    *
+    * @return mixed An array with the information of the updated transaction
+    * @throws TransactionUpdateException On creation error
+    */
+    public function update(Builder $transaction, $newAmount)
+    {
+        try {
+            $transaction->update(['amount' => $newAmount]);
+
+            $transaction->join('users', 'users.id', '=', 'transactions.user_id')
+                        ->select(['transactions.id as transactionId', 'users.id AS customerId', 'amount', 'transactions.created_at AS date'])
+                        ->get();
+
+            return $transaction->get()->first();
+        } catch (QueryException $e) {
+            throw new TransactionUpdateException();
+        }
+    }
+
+   /**
+    * Deletes an existing transaction
+    *
+    * @param Transaction $transaction The transaction to be deleted
+    *
+    * @return boolean Wheter the deletion was successful or not
+    * @throws TransactionDeleteException On deletion error
+    */
+    public function delete(Transaction $transaction)
+    {
+        try {
+            $transaction->delete();
+
+        } catch (QueryException $e) {
+            throw new TransactionDeleteException();
+        }
+    }
+
+   /**
     * Prepare transactions filters for being applied
     *
     * @param integer $amount
@@ -106,5 +160,17 @@ class TransactionService
         $date = $year.'-'.$month.'-'.$day;
 
         return compact('amount', 'date', 'offset', 'limit');
+    }
+
+   /**
+    * Checks whether a transaction payload is valid or not
+    *
+    * @param Request $request The transaction request
+    *
+    * @return boolean Wheter the payload is valid or not
+    */
+    public function isValid(Request $request)
+    {
+        return ($request->route('amount') > 0 && $request->route('offset') >= 1 && $request->route('limit') > 0);
     }
 }
