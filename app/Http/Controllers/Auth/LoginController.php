@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Optimus\Bruno\LaravelController;
+use App\Service\Auth\LoginProxy;
+use App\Service\Auth\LoginRequest;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 
-class LoginController extends Controller
+class LoginController extends LaravelController
 {
     /*
     |--------------------------------------------------------------------------
@@ -27,13 +30,35 @@ class LoginController extends Controller
      */
     protected $redirectTo = '/home';
 
+    private $loginProxy;
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(LoginProxy $loginProxy)
     {
         $this->middleware('guest')->except('logout');
+        $this->loginProxy = $loginProxy;
+    }
+
+    public function login(LoginRequest $request)
+    {
+        $email = $request->get('email');
+        $password = $request->get('password');
+
+        return $this->response($this->loginProxy->attemptLogin($email, $password));
+    }
+
+    public function refresh(Request $request)
+    {
+        return $this->response($this->loginProxy->attemptRefresh());
+    }
+
+    public function logout()
+    {
+        $this->loginProxy->logout();
+
+        return $this->response(null, 204);
     }
 }

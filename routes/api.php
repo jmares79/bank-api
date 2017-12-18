@@ -17,8 +17,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// $router->post('/login', 'LoginController@login');
-// $router->post('/login/refresh', 'LoginController@refresh');
+$router->post('/login', 'Auth\LoginController@login');
+$router->post('/login/refresh', 'Auth\LoginController@refresh');
 
 Route::post('/customer', function () {
     //
@@ -33,3 +33,30 @@ Route::get('/transactions/{customerId}/{amount}/{year}/{month}/{day}/{offset}/{l
 Route::post('/transaction', 'TransactionController@create')->name('create-transaction');
 Route::put('/transaction', 'TransactionController@update')->name('update-transaction');
 Route::delete('/transaction/{transactionId}', 'TransactionController@delete')->name('delete-transaction');
+
+Route::get('/redirect', function () {
+    $query = http_build_query([
+        'client_id' => '1',
+        'redirect_uri' => 'http://127.0.0.1:8000/callback',
+        'response_type' => 'code',
+        'scope' => '',
+    ]);
+
+    return redirect('http://127.0.0.1:8000/oauth/authorize?'.$query);
+});
+
+Route::get('/callback', function (\Illuminate\Http\Request $request) {
+    $http = new GuzzleHttp\Client;
+
+    $response = $http->post('http://127.0.0.1:8000/oauth/token', [
+        'form_params' => [
+            'grant_type' => 'authorization_code',
+            'client_id' => '1',
+            'client_secret' => 'C2XILc42XMoJTBKMyhTPAZmSTcwu3o4Ym8dLds4p',
+            'redirect_uri' => 'http://127.0.0.1:8000/callback',
+            'code' => $request->code,
+        ],
+    ]);
+
+    return json_decode((string) $response->getBody(), true);
+});
