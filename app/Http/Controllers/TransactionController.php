@@ -43,7 +43,7 @@ class TransactionController extends Controller
         try {
             $transactions = $customer->transactions()->get();
 
-            return response()->json(['transaction' => $transactions], Response::HTTP_OK);
+            return response()->json(['transactions' => $transactions], Response::HTTP_OK);
         } catch (Exception $e) {
             return response()->json(['message' => "Error while getting transaction"], Response::HTTP_BAD_REQUEST);
         }
