@@ -20,12 +20,10 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 // $router->post('/login', 'LoginController@login');
 // $router->post('/login/refresh', 'LoginController@refresh');
 
-Route::post('/customer', function () {
-    //
-})->middleware('auth:api');
 
+Route::get('/transactions/{customerId}', 'TransactionController@getAllTransactions')->name('get-all-transactions');
 Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@transaction')
-    ->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+'])->name('get-transaction');;
+    ->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+'])->name('get-transaction')->middleware('cors');
 
 Route::get('/transactions/{customerId}/{amount}/{year}/{month}/{day}/{offset}/{limit}', 'TransactionController@transactions')
     ->where(['customerId' => '[0-9]+', 'year' => '[0-9]{4}', 'month' => '[2-9]|1[0-2]?', 'day' => '(0[1-9]|[12]\d|3[01])', 'offset' => '[0-9]+', 'limit' => '[0-9]+'])->name('get-filtered-transaction');
