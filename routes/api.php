@@ -21,7 +21,7 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 // $router->post('/login/refresh', 'LoginController@refresh');
 
 
-Route::get('/transactions/{customerId}', 'TransactionController@getAllTransactions')->name('get-all-transactions');
+Route::get('/transactions/{customerId}', 'TransactionController@getAllTransactions')->name('get-all-transactions')->middleware('cors');
 Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@transaction')
     ->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+'])->name('get-transaction')->middleware('cors');
 
