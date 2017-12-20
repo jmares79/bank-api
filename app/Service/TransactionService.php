@@ -6,6 +6,7 @@ use App\Exceptions\TransactionNotFoundException;
 use App\Exceptions\TransactionCreationException;
 use App\Exceptions\TransactionUpdateException;
 use App\Exceptions\TransactionDeleteException;
+use App\Exceptions\TransactionSumStoreException;
 use \Illuminate\Database\QueryException;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ use App\Filter\Date;
 use App\Filter\Offset;
 use App\Filter\Limit;
 use App\Transaction;
+use App\Util\DateFormatter;
 
 /**
  * @resource transaction
@@ -25,11 +27,13 @@ use App\Transaction;
 class TransactionService
 {
     protected $transactions;
+    protected $formatter;
     protected $filterService;
 
-    public function __construct(FilterService $filterService)
+    public function __construct(FilterService $filterService, DateFormatter $formatter)
     {
         $this->filterService = $filterService;
+        $this->formatter = $formatter;
     }
 
    /**
@@ -172,5 +176,28 @@ class TransactionService
     public function isValid(Request $request)
     {
         return ($request->route('amount') > 0 && $request->route('offset') >= 1 && $request->route('limit') > 0);
+    }
+
+   /**
+    * Stores the sum of all the transactions of the previous day
+    *
+    * @throws TransactionSumStoreException If the process has an error
+    */
+    public function storeSum()
+    {
+        DB::beginTransaction();
+        $dates = $this->formatter->getDateForStoring();
+
+        try {
+            $sum = DB::table('transactions')
+                        ->where('created_at', '>=', $dates[0])
+                        ->where('created_at', '<=', $dates[1])->sum('amount');
+
+            DB::table('transactions_historic')->insert(['amount' => $sum, 'date' => $dates[0]]);
+            DB::commit();
+        } catch(Exception $e) {
+            DB::rollBack();
+            throw new TransactionSumStoreException();
+        }
     }
 }
