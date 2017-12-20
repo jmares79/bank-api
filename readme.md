@@ -42,7 +42,7 @@ As in every Laravel project, each action is mapped to a route in `routes\api.php
 
 Just clone this repo to any desired folder (either a XAMPP htdocs, Docker PHP container or anything that suits you) and execute `composer install` in the command line.
 
-Start your web server & MySQL server (for developing purposes I use the built in that PHP has) typing `php artisan serve` in the project folder command line and using any MySQL server you prefer; then create both a `snap` & `snap_test` database for migrations to run properly.
+Start your web server & MySQL server (for developing purposes I use the built in that PHP has) typing `php artisan serve` in the project folder command line and using any MySQL server you prefer; then create both a `bet-bank` & `bet-bank-testing` database for migrations to run properly.
 
 After that, create the schema in the desired DDBB and run `php artisan migrate` to run migrations and create schema tables.
 If desired, a `php artisan db:seed` could be executed, in order to populate the DDBB with fake data
