@@ -72,7 +72,7 @@ class TransactionControllerTest extends TestCase
     public function testCreateTransaction($payload, $httpStatus, $expectedResponse)
     {
         $response = $this->json('POST', route('create-transaction'), $payload);
-        // dd($response);
+
         $response->assertStatus($httpStatus);
         $response->assertJsonStructure($expectedResponse);
     }

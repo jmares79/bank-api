@@ -13,6 +13,7 @@ use App\Http\Requests\CreateTransactionPost;
 use App\Http\Requests\UpdateTransactionPut;
 use Illuminate\Support\Facades\DB;
 use App\Transaction;
+use App\User;
 
 class TransactionController extends Controller
 {
@@ -24,7 +25,32 @@ class TransactionController extends Controller
     }
 
    /**
-    * Gets a transaction by customer and id
+    * Gets all transactions for a customer
+    *
+    * @param integer $customerId
+    *
+    * @return mixed An array with all transactions in JSON format
+    * @return Response HTTP 200 on success,
+    * @return Response HTTP 400 on retrieval error,
+    *
+    * @throws Exception On error while getting the transactions
+    */
+    public function getAllTransactions(Request $request, $customerId)
+    {
+        $customer = \App\User::find($customerId);
+        if (null == $customer) { return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND); }
+
+        try {
+            $transactions = $customer->transactions()->get();
+
+            return response()->json(['transactions' => $transactions], Response::HTTP_OK);
+        } catch (Exception $e) {
+            return response()->json(['message' => "Error while getting transaction"], Response::HTTP_BAD_REQUEST);
+        }
+    }
+
+   /**
+    * Gets a transaction by customer and transaction id
     *
     * @param integer $customerId
     * @param integer $transactionId
@@ -32,7 +58,7 @@ class TransactionController extends Controller
     * @return mixed A transaction in JSON format
     * @return Response HTTP 200 on success,
     * @return Response HTTP 404 when non existing transaction,
-    * @return Response HTTP 400 on creation error,
+    * @return Response HTTP 400 on retrieval error,
     *
     * @throws Exception On error while getting a transaction
     */
