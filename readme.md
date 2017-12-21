@@ -17,7 +17,7 @@ It also has Symfony components, which takes the best parts of another great fram
 The project is structured with the following resources, as follows:
 
 * __Transaction resource__ Which provides both a controller and a service for managing all transactions
-* __User resource__ Which handles all login and auth 
+* __User resource__ Which handles all login and auth
 * Several __Models__ Which handles the business info for and to the DDBB
 * __Migrations && Factory seeders__ Which helps creating all the DDBB Schema AND provides fake data to test the API
 
@@ -87,10 +87,26 @@ public function testCreateTransaction($payload, $httpStatus, $expectedResponse)
 
 Out of Scope I left Unit tests & behavioural tests  (like the ones Behat suite provides), but let's give a quick example of what would I test with them:
 
-__TransactionService__ has a set of public methods that handles the business logic of creation/updating/retrieval and deletion of a transaction. 
+__TransactionService__ has a set of public methods that handles the business logic of creation/updating/retrieval and deletion of a transaction.
 
 We can create a single unit test for each method, mocking all necessary data and checking that the return of the method matches the desired functionality.
 
 One nice, although slow, method would be create a single test file for each set of methods (GET, POST, etc), in order to follow somehow an `Open/Closed` principle of not modify a test case one it's working, polluting it with more tests and fake data, which is phrone to errors __(This idea was left outside of the scope with the actual tests for lack of time)__
+
+## Crontab to process transactions
+
+In order to fullfill the request about the sum of all the transactions of the previous day, a console command classwere created:
+
+* __App\Console\Commands\StoreSumAllTransactions__ class were added for creating a new console command that could be invoked via the command line in the form:
+
+```
+php artisan transactions:sum
+```
+
+When invoked, the command will call, via its `handle()` method, to __TransactionService::storeSum()__, which, with the help of a __DateFormatter__ utility class will get the sum of all the required transactions, and then will insert them to a new table `transactions_historic`.
+
+Also, a `crontab` file was created, which will execute the command every 2 days, by calculating the modulo of the total of seconds since a start date, and if `date % 2 == 0` then the command will be executed.
+
+`NOTE: As my environment is a Windows one, the crontab was tested in an auxiliaty env. Please retest in a proper Linux SO before using`
 
 
