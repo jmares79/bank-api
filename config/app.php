@@ -164,6 +164,7 @@ return [
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
         Laravel\Passport\PassportServiceProvider::class,
+        Optimus\ApiConsumer\Provider\LaravelServiceProvider::class,
 
         /*
          * Package Service Providers...

@@ -17,11 +17,19 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// $router->post('/login', 'LoginController@login');
-// $router->post('/login/refresh', 'LoginController@refresh');
+$router->post('/login', 'Auth\LoginController@login')->middleware('cors');
+Route::options('/login', function() { return; })->middleware('cors');
+
+$router->post('/login/refresh', 'Auth\LoginController@refresh')->middleware('cors');
+Route::options('/login/refresh', function() { return; })->middleware('cors');
 
 
-Route::get('/transactions/{customerId}', 'TransactionController@getAllTransactions')->name('get-all-transactions')->middleware('cors');
+Route::middleware('auth:api')
+    ->get('/transactions/{customerId}', 'TransactionController@getAllTransactions')
+    ->name('get-all-transactions')
+    ->middleware('cors');
+Route::options('/transactions/{customerId}', function() { return; })->middleware('cors');
+
 Route::get('/transaction/{customerId}/{transactionId}', 'TransactionController@transaction')
     ->where(['customerId' => '[0-9]+', 'transactionId' => '[0-9]+'])->name('get-transaction')->middleware('cors');
 
