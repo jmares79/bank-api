@@ -1,6 +1,6 @@
 # I Soft Bet API challenge
 
-To create a Laravel project to simulate an bank transaction item process line that creates them, and be a data supplier to a Front End to show/manage those transactions.
+To create a Laravel project to simulate an bank transaction item process line that creates them, and be a data supplier to a Front End to show those transactions.
 
 It consists of a REST JSON API to handle the creation and loading of transactions & some static users for authentication.
 
@@ -10,8 +10,6 @@ ISoft REST API is based on the [Laravel framework](https://laravel.com/), using 
 
 The reason for using Laravel is that is an up-to-date modern MVC framework, that has all needed capabilites for building, maintaining documenting and testing any project in a painless way.
 
-It also has Symfony components, which takes the best parts of another great framework, and last but not least, it has an amazing documentation, both [written](https://laravel.com/) or in [video lessons](https://laracasts.com/)
-
 ### Data models
 
 The project is structured with the following resources, as follows:
@@ -19,13 +17,13 @@ The project is structured with the following resources, as follows:
 * __Transaction resource__ Which provides both a controller and a service for managing all transactions
 * __User resource__ Which handles all login and auth
 * Several __Models__ Which handles the business info for and to the DDBB
-* __Migrations && Factory seeders__ Which helps creating all the DDBB Schema AND provides fake data to test the API
+* __Migrations & Factory seeders__ Which helps creating all the DDBB Schema AND provides fake data to test the API
 
-In a nutshell, __Transaction__  is a master table, that contains (in a proper production enviromnet) all the core data for the business to run. It usually get updates only, as the product base is supposedly to grow.
+In a nutshell, __Transaction__  is a master table, that contains (in a proper production environment) all the core data for the business to run. It usually get updates only, as the product base is supposedly to grow.
 
 __Users__ is the table where the equivalent of customers are, kept to a minimum for scoping purposes.
 
-### Controllers
+### Controllers & routing
 
 The requests are handled by `App\Http\Controllers\*` that provides a set of actions to be called on every request.
 
@@ -37,6 +35,57 @@ As in every Laravel project, each action is mapped to a route in `routes\api.php
 * HTTP POST `api/transaction` - Creates a new transaction
 * HTTP PUT `api/transaction` - Updates a new transaction
 * HTTP DELETE `api/transaction/{transactionId}` - Deletes an existing transaction
+
+### Filters
+
+In order to provide the functionality of the GET filtered transactions, a series of filter classes were created.
+
+Commiting to SOLID principles, a `FilterInterface` was created, which every single filter should implement.
+
+The `App\Filter` filters are applied as follows:
+
+* The `TransactionService` gets all filters and prepares them in the form of an array.
+* The `FilterService` iterate over that array, applying the specific filter on the fly by checking its type.
+* The concrete filter does its job and return the data
+
+Despite seeming that this is creating an overload of extra classes, it's really good for following `OPEN CLOSED` principle, as every time a new filter is added to the business, the developer will only have to add a new filter class that implements the named interface, and the software will be good to go with almos any changes!!!
+
+
+### CORS and middleware
+
+According to the [CORS spec] (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS), for requesting a resource from a different domain, some specific HTTP headers must be sent for the client to gain access to those resources.
+
+Laravel facilitates this process with a middleware that send those specific headers for us when requesting a specific resource.
+
+In order to achieve that, a `app/Http/Middleware/CORS.php` middleware was created, which adds a series of headers to any request that goes through it.
+
+For it to be applied, we have to add `->middleware('cors')` call to any single route that needs the CORS to be enabled.
+
+In our case, the `login` and `get-transaction` routes are the ones we enabled, as are the ones we used for the front end to call.
+
+## Authentication
+
+The API has an auth system in order to provide data only to specific authenticated users.
+
+For the purpose of the job, I used `passport` library for it. Passport is an implementation of OAuth2 for Laravel.
+
+Passport provides some tables and routes out of the box in order to handle request and API authentication. In a nutshell it creates an access token that is used in every request in a HTTP header to proof that the user that requested some resource is enabled to do it.
+
+It's quite a complete set of functionality, and for more information the documentation is the best place to research about it.
+
+In order to enable the auth process, `Route::middleware('auth:api')` should be added to any route we want to, remembering to NOT add it to `logout` or `register` route.
+
+The specific code to be used when requesting those resources, is to add the token like this:
+
+```
+{
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+}
+```
+
+The middleware will process it and check against the database.
 
 ## Installation
 
@@ -52,6 +101,15 @@ If any of those DDBBs seems incorrect, just change the names in the .env file lo
 ```
 I developed and QA test it using [Postman](https://www.getpostman.com/postman)
 End with an example of getting some data out of the system or using it for a little demo
+
+Then execute `php artisan passport:install` in order to l create the encryption keys needed to generate secure access tokens.
+
+When deploying Passport to your production servers for the first time, you will likely need to run the  passport:keys command.
+This command generates the encryption keys Passport needs in order to generate access token. The generated keys are not typically kept in source control:
+
+`php artisan passport:keys`
+
+For the sake of the example, the tokens never expires.
 
 ## Tests
 
@@ -93,20 +151,6 @@ We can create a single unit test for each method, mocking all necessary data and
 
 One nice, although slow, method would be create a single test file for each set of methods (GET, POST, etc), in order to follow somehow an `Open/Closed` principle of not modify a test case one it's working, polluting it with more tests and fake data, which is phrone to errors __(This idea was left outside of the scope with the actual tests for lack of time)__
 
-## Crontab to process transactions
+## Issues or bugs?
 
-In order to fullfill the request about the sum of all the transactions of the previous day, a console command classwere created:
-
-* __App\Console\Commands\StoreSumAllTransactions__ class were added for creating a new console command that could be invoked via the command line in the form:
-
-```
-php artisan transactions:sum
-```
-
-When invoked, the command will call, via its `handle()` method, to __TransactionService::storeSum()__, which, with the help of a __DateFormatter__ utility class will get the sum of all the required transactions, and then will insert them to a new table `transactions_historic`.
-
-Also, a `crontab` file was created, which will execute the command every 2 days, by calculating the modulo of the total of seconds since a start date, and if `date % 2 == 0` then the command will be executed.
-
-`NOTE: As my environment is a Windows one, the crontab was tested in an auxiliaty env. Please retest in a proper Linux SO before using`
-
-
+Just open a bug/ticket to the project and I'll fix it ASAP :)
