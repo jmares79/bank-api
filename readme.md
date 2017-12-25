@@ -50,10 +50,9 @@ The `App\Filter` filters are applied as follows:
 
 Despite seeming that this is creating an overload of extra classes, it's really good for following `OPEN CLOSED` principle, as every time a new filter is added to the business, the developer will only have to add a new filter class that implements the named interface, and the software will be good to go with almos any changes!!!
 
-
 ### CORS and middleware
 
-According to the [CORS spec] (https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS), for requesting a resource from a different domain, some specific HTTP headers must be sent for the client to gain access to those resources.
+According to the [CORS spec](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS), for requesting a resource from a different domain, some specific HTTP headers must be sent for the client to gain access to those resources.
 
 Laravel facilitates this process with a middleware that send those specific headers for us when requesting a specific resource.
 
@@ -86,6 +85,16 @@ The specific code to be used when requesting those resources, is to add the toke
 ```
 
 The middleware will process it and check against the database.
+
+## Console commands and cron
+
+As specified, the project has a new console command to execute the sum of all the transactions of the previous day.
+
+The specific command for perform that task is `App\Command\StoreSumAllTransactions` which, via the `TransactionService`, stores the required sum.
+
+In order to execute it, a crontab file was created, which will trigger the command in the specified time.
+
+The command to be executed is `php artisan transactions:sum`
 
 ## Installation
 
